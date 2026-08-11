@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KKN Tematik Desa Pemuda Jaya | Kelompok 42</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Inter & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        secondary: {
+                            50: '#f0f9ff',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .dark .glass-card {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(34, 197, 94, 0.5);
+            border-radius: 999px;
+        }
+    </style>
+</head>
+<body x-data="kknApp()" :class="{ 'dark bg-slate-950 text-slate-100': darkMode, 'bg-slate-50 text-slate-800': !darkMode }" class="font-sans antialiased selection:bg-brand-500 selection:text-white transition-colors duration-300 min-h-screen flex flex-col custom-scrollbar">
+
+    <!-- Toast Notification -->
+    <div x-show="toast.show" 
+         x-transition:enter="transition ease-out duration-300 transform"
+         x-transition:enter-start="opacity-0 translate-y-4"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-200 transform"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 translate-y-4"
+         class="fixed bottom-5 right-5 z-50 flex items-center p-4 max-w-sm w-full bg-slate-900 text-white rounded-2xl shadow-2xl border border-brand-500/30"
+         style="display: none;">
+        <div class="inline-flex items-center justify-center flex-shrink-0 w-10 h-10 text-brand-500 bg-brand-500/10 rounded-xl">
+            <i class="fa-solid fa-check-circle text-xl"></i>
+        </div>
+        <div class="ml-3 text-sm font-medium" x-text="toast.message"></div>
+        <button type="button" @click="toast.show = false" class="ml-auto -mx-1.5 -my-1.5 bg-transparent text-slate-400 hover:text-white rounded-lg p-1.5 inline-flex items-center justify-center h-8 w-8">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <header class="sticky top-0 z-40 w-full transition-all duration-300" :class="{ 'bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm border-b border-slate-200/50 dark:border-slate-800/50': scrolled, 'bg-transparent': !scrolled }">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo -->
+                <a href="#hero" class="flex items-center gap-3 group">
+                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center text-white shadow-lg shadow-brand-500/30 group-hover:scale-105 transition-transform">
+                        <i class="fa-solid fa-graduation-cap text-lg"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-brand-700 via-emerald-600 to-teal-600 dark:from-brand-400 dark:to-teal-400 bg-clip-text text-transparent">KKN-42</span>
+                        <span class="block text-xs font-semibold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Desa Pemuda Jaya</span>
+                    </div>
+                </a>
+
+                <!-- Desktop Nav -->
+                <nav class="hidden md:flex items-center gap-1 lg:gap-2">
+                    <template x-for="item in navLinks" :key="item.href">
+                        <a :href="item.href" 
+                           class="px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-brand-500/10 hover:text-brand-600 dark:hover:text-brand-400"
+                           :class="activeSection === item.href.substring(1) ? 'text-brand-600 dark:text-brand-400 font-semibold bg-brand-500/10' : 'text-slate-600 dark:text-slate-300'">
+                            <span x-text="item.label"></span>
+                        </a>
+                    </template>
+                </nav>
+
+                <!-- Action Controls -->
+                <div class="flex items-center gap-3">
+                    <button @click="darkMode = !darkMode" 
+                            class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                            aria-label="Toggle Dark Mode">
+                        <i class="fa-solid" :class="darkMode ? 'fa-sun text-amber-400' : 'fa-moon text-indigo-600'"></i>
+                    </button>
+
+                    <a href="#aspirasi" class="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm shadow-lg shadow-brand-600/30 hover:shadow-brand-600/50 transition-all hover:-translate-y-0.5">
+                        <i class="fa-regular fa-paper-plane"></i>
+                        <span>Saran Warga</span>
+                    </a>
+
+                    <!-- Mobile Menu Button -->
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                        <i class="fa-solid" :class="mobileMenuOpen ? 'fa-xmark' : 'fa-bars'"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Drawer Menu -->
+        <div x-show="mobileMenuOpen" 
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             class="md:hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 pt-2 pb-6 space-y-2 shadow-xl">
+            <template x-for="item in navLinks" :key="item.href">
+                <a :href="item.href" 
+                   @click="mobileMenuOpen = false"
+                   class="block px-4 py-3 rounded-xl text-base font-medium text-slate-700 dark:text-slate-200 hover:bg-brand-500/10 hover:text-brand-600"
+                   x-text="item.label"></a>
+            </template>
+            <div class="pt-2">
+                <a href="#aspirasi" @click="mobileMenuOpen = false" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-brand-600 text-white font-semibold shadow-md">
+                    <i class="fa-regular fa-paper-plane"></i>
+                    <span>Kirim Aspirasi / Saran</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <section id="hero" class="relative pt-10 pb-20 md:pt-16 md:pb-32 overflow-hidden">
+        <!-- Background Gradients & Accents -->
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-tr from-brand-500/10 via-emerald-400/10 to-teal-500/0 blur-3xl pointer-events-none -z-10 rounded-full"></div>
+        <div class="absolute top-1/3 -right-20 w-72 h-72 bg-teal-500/10 blur-3xl pointer-events-none -z-10 rounded-full"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-12 gap-12 items-center">
+                
+                <!-- Left Content -->
+                <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-500/10 text-brand-700 dark:text-brand-400 text-xs sm:text-sm font-semibold border border-brand-500/20">
+                        <span class="flex h-2 w-2 rounded-full bg-brand-500 animate-ping"></span>
+                        <i class="fa-solid fa-leaf"></i>
+                        <span>KKN Tematik Pemberdayaan Masyarakat 2026</span>
+                    </div>
+
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.15]">
+                        Mengabdi Bersama Masyarakat, <span class="bg-gradient-to-r from-brand-600 via-emerald-500 to-teal-600 bg-clip-text text-transparent">Membangun Pemuda Jaya</span>
+                    </h1>
+
+                    <p class="text-lg sm:text-xl text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                        Portal resmi dokumentasi, program kerja, dan logbook kegiatan KKN Kelompok 42 Universitas Negeri. Bergerak bersama mewujudkan transformasi desa yang inovatif, mandiri, dan berkelanjutan.
+                    </p>
+
+                    <!-- CTA Buttons -->
+                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
+                        <a href="#progja" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-center shadow-lg shadow-brand-600/30 hover:shadow-brand-600/50 transition-all hover:-translate-y-1 flex items-center justify-center gap-3">
+                            <span>Eksplor Program Kerja</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                        <a href="#profil-desa" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white dark:bg-slate-800 text-slate-800 dark:text-white font-bold text-center border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all shadow-sm flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-map-location-dot text-brand-600 dark:text-brand-400"></i>
+                            <span>Profil Desa</span>
+                        </a>
+                    </div>
+
+                    <!-- Quick Highlights -->
+                    <div class="pt-8 border-t border-slate-200 dark:border-slate-800/80 grid grid-cols-3 gap-4 text-center lg:text-left">
+                        <div>
+                            <p class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">45 <span class="text-brand-600">+</span></p>
+                            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Hari Pengabdian</p>
+                        </div>
+                        <div>
+                            <p class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">12 <span class="text-brand-600">Progja</span></p>
+                            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Inovasi Utama</p>
+                        </div>
+                        <div>
+                            <p class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">10 <span class="text-brand-600">Mahasiswa</span></p>
+                            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Lintas Fakultas</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Hero Card / Banner Image -->
+                <div class="lg:col-span-5 relative">
+                    <div class="relative mx-auto max-w-md lg:max-w-none">
+                        <!-- Decorative Frame Blur -->
+                        <div class="absolute -inset-2 rounded-3xl bg-gradient-to-tr from-brand-600 to-teal-400 opacity-30 blur-2xl"></div>
+                        
+                        <!-- Main Image Container -->
+                        <div class="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white dark:border-slate-800 bg-slate-900 aspect-[4/3] sm:aspect-[16/10] lg:aspect-[4/5] group">
+                            <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1000&q=80" 
+                                 alt="Kegiatan Pengabdian Masyarakat KKN" 
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                 onerror="this.src='https://placehold.co/800x1000/16a34a/ffffff?text=Dokumentasi+KKN'">
+                            
+                            <!-- Overlay Gradient -->
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent"></div>
+
+                            <!-- Floating Info Badge -->
+                            <div class="absolute bottom-6 left-6 right-6 p-4 rounded-2xl glass-card border border-white/20 text-white space-y-1">
+                                <div class="flex items-center justify-between text-xs font-semibold text-brand-300">
+                                    <span><i class="fa-solid fa-location-dot mr-1"></i> Posko KKN Kelompok 42</span>
+                                    <span class="bg-brand-500/20 px-2 py-0.5 rounded-full border border-brand-400/30">Aktif</span>
+                                </div>
+                                <p class="text-sm font-bold text-white">Dusun Karang Anyar, Desa Pemuda Jaya</p>
+                                <p class="text-xs text-slate-300 line-clamp-1">Pemberdayaan UMKM Kopi Local & Digitalisasi Sistem Desa</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="profil-desa" class="py-20 bg-slate-100/70 dark:bg-slate-900/40 relative border-y border-slate-200/60 dark:border-slate-800/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
+                <span class="text-brand-600 dark:text-brand-400 font-bold text-sm tracking-wider uppercase">Mengenal Wilayah Sasaran</span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Profil & Potensi Desa Pemuda Jaya</h2>
+                <p class="text-slate-600 dark:text-slate-400 text-base sm:text-lg">
+                    Desa yang kaya akan sumber daya alam, semangat kebersamaan warga yang hangat, dan potensi ekonomi kreatif yang berkembang pesat.
+                </p>
+            </div>
+
+            <!-- Profile Cards Grid -->
+            <div class="grid md:grid-cols-3 gap-8 mb-12">
+                <!-- Geografi -->
+                <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 hover:shadow-xl transition-all group">
+                    <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-mountain-sun"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Geografis & Demografi</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-4">
+                        Terletak di dataran tinggi dengan luas wilayah 420 Hektar. Memiliki populasi sekitar 2.450 jiwa yang tersebar di 4 dusun utama.
+                    </p>
+                    <ul class="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-brand-500"></i> Ketinggian: 750 mdpl</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-brand-500"></i> Jumlah KK: 680 Kepala Keluarga</li>
+                    </ul>
+                </div>
+
+                <!-- Potensi Ekonomi -->
+                <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 hover:shadow-xl transition-all group">
+                    <div class="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-wheat-awn"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Potensi Utama</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-4">
+                        Komoditas unggulan pertanian kopi robusta, sayuran organik, serta industri kerajinan bambu lokal yang bernilai tinggi.
+                    </p>
+                    <ul class="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-brand-500"></i> Produk Unggulan: Kopi Karang Anyar</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-brand-500"></i> Kerajinan: Anyaman Bambu Usaha Ibu-Ibu PK3</li>
+                    </ul>
+                </div>
+
+                <!-- Fokus Pengabdian -->
+                <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800 hover:shadow-xl transition-all group">
+                    <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-bullseye"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Fokus KKN Kelompok 42</h3>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-4">
+                        Pendampingan digitalisasi UMKM lokal, edukasi sanitasi lingkungan sekolah, pembuatan peta digital desa, dan peningkatan literasi anak.
+                    </p>
+                    <ul class="space-y-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-brand-500"></i> Target: Digitalisasi 15 UMKM</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-brand-500"></i> Sasaran: Pemuda Karang Taruna & SD</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="tim" class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
+                <span class="text-brand-600 dark:text-brand-400 font-bold text-sm tracking-wider uppercase">Struktur Kelompok</span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Tim Mahasiswa Pengabdi</h2>
+                <p class="text-slate-600 dark:text-slate-400 text-base sm:text-lg">
+                    Kolaborasi 10 mahasiswa lintas disiplin keilmuan yang siap memberikan kontribusi nyata bagi masyarakat.
+                </p>
+            </div>
+
+            <!-- Team Filter Tabs -->
+            <div class="flex flex-wrap justify-center gap-2 mb-10">
+                <button @click="teamFilter = 'all'" 
+                        :class="teamFilter === 'all' ? 'bg-brand-600 text-white shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'" 
+                        class="px-4 py-2 rounded-xl text-sm font-semibold transition-all">Semua Anggota</button>
+                <button @click="teamFilter = 'BPH'" 
+                        :class="teamFilter === 'BPH' ? 'bg-brand-600 text-white shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'" 
+                        class="px-4 py-2 rounded-xl text-sm font-semibold transition-all">Pengurus Harian (BPH)</button>
+                <button @click="teamFilter = 'Divisi'" 
+                        :class="teamFilter === 'Divisi' ? 'bg-brand-600 text-white shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'" 
+                        class="px-4 py-2 rounded-xl text-sm font-semibold transition-all">Koordinator Divisi</button>
+            </div>
+
+            <!-- Team Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <template x-for="member in filteredTeam" :key="member.id">
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group">
+                        <div class="relative h-64 overflow-hidden bg-slate-200 dark:bg-slate-800">
+                            <img :src="member.photo" 
+                                 :alt="member.name" 
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                 onerror="this.src='https://placehold.co/400x500/16a34a/ffffff?text=Mahasiswa+KKN'">
+                            <div class="absolute top-3 right-3 bg-slate-900/70 backdrop-blur-md text-white text-xs px-3 py-1 rounded-full font-medium" x-text="member.role"></div>
+                        </div>
+                        <div class="p-6 flex-1 flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900 dark:text-white" x-text="member.name"></h3>
+                                <p class="text-xs font-semibold text-brand-600 dark:text-brand-400 mb-2" x-text="member.major"></p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 italic line-clamp-2" x-text="'&quot;' + member.quote + '&quot;'"></p>
+                            </div>
+                            <div class="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+                                <span class="text-[11px] font-medium text-slate-400" x-text="'NIM: ' + member.nim"></span>
+                                <div class="flex items-center gap-2">
+                                    <a :href="member.instagram" target="_blank" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 flex items-center justify-center text-xs transition-colors">
+                                        <i class="fa-brands fa-instagram"></i>
+                                    </a>
+                                    <a :href="'mailto:' + member.email" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-brand-600 dark:hover:text-brand-400 flex items-center justify-center text-xs transition-colors">
+                                        <i class="fa-regular fa-envelope"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </section>
+
+    <section id="progja" class="py-20 bg-slate-100/70 dark:bg-slate-900/40 border-y border-slate-200/60 dark:border-slate-800/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+                <div class="space-y-3 max-w-2xl">
+                    <span class="text-brand-600 dark:text-brand-400 font-bold text-sm tracking-wider uppercase">Rencana & Realisasi</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Program Kerja Utama (PROGJA)</h2>
+                    <p class="text-slate-600 dark:text-slate-400 text-base">
+                        Inisiatif unggulan yang disusun berdasarkan analisis kebutuhan dan pemetaan potensi Desa Pemuda Jaya.
+                    </p>
+                </div>
+
+                <!-- Category Filters -->
+                <div class="flex flex-wrap gap-2">
+                    <template x-for="cat in progjaCategories" :key="cat">
+                        <button @click="selectedCategory = cat" 
+                                :class="selectedCategory === cat ? 'bg-brand-600 text-white shadow-md' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'"
+                                class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all">
+                            <span x-text="cat"></span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Progja Grid Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <template x-for="item in filteredProgja" :key="item.id">
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+                        <div class="space-y-4">
+                            <!-- Category Badge & Status -->
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold px-3 py-1 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20" x-text="item.category"></span>
+                                <span :class="{
+                                        'bg-emerald-500/10 text-emerald-600 border-emerald-500/20': item.status === 'Terlaksana',
+                                        'bg-amber-500/10 text-amber-600 border-amber-500/20': item.status === 'Berlangsung',
+                                        'bg-blue-500/10 text-blue-600 border-blue-500/20': item.status === 'Rencana'
+                                      }" class="text-xs font-semibold px-2.5 py-1 rounded-full border" x-text="item.status"></span>
+                            </div>
+
+                            <h3 class="text-xl font-bold group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors" x-text="item.title"></h3>
+                            <p class="text-slate-600 dark:text-slate-400 text-sm line-clamp-3" x-text="item.description"></p>
+
+                            <!-- Target & PIC -->
+                            <div class="space-y-2 pt-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-bullseye text-brand-500 w-4"></i>
+                                    <span>Sasaran: <strong class="text-slate-700 dark:text-slate-200" x-text="item.target"></strong></span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-user-check text-brand-500 w-4"></i>
+                                    <span>PJ Progja: <strong class="text-slate-700 dark:text-slate-200" x-text="item.pic"></strong></span>
+                                </div>
+                            </div>
+
+                            <!-- Progress Bar -->
+                            <div class="space-y-1.5 pt-2">
+                                <div class="flex justify-between text-xs font-semibold">
+                                    <span class="text-slate-500">Progres Kegiatan</span>
+                                    <span class="text-brand-600 dark:text-brand-400" x-text="item.progress + '%'"></span>
+                                </div>
+                                <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                                    <div class="bg-gradient-to-r from-brand-600 to-emerald-400 h-2 rounded-full transition-all duration-500" :style="'width: ' + item.progress + '%'"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Detail Trigger -->
+                        <div class="pt-6 mt-6 border-t border-slate-100 dark:border-slate-800">
+                            <button @click="openProgjaModal(item)" class="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white text-slate-700 dark:text-slate-200 font-semibold text-xs transition-all flex items-center justify-center gap-2">
+                                <span>Lihat Rincian Program</span>
+                                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </section>
+
+    <section id="jadwal" class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
+                <span class="text-brand-600 dark:text-brand-400 font-bold text-sm tracking-wider uppercase">Jadwal & Agenda</span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Timeline Pengabdian KKN</h2>
+                <p class="text-slate-600 dark:text-slate-400 text-base sm:text-lg">
+                    Tahapan pelaksanaan kegiatan pengabdian masyarakat selama 6 minggu di Desa Pemuda Jaya.
+                </p>
+            </div>
+
+            <!-- Timeline Vertical Grid -->
+            <div class="relative max-w-4xl mx-auto">
+                <!-- Center Line -->
+                <div class="hidden sm:block absolute left-1/2 top-0 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-800 -translate-x-1/2"></div>
+
+                <div class="space-y-12">
+                    <template x-for="(step, idx) in timelineSteps" :key="idx">
+                        <div class="relative flex flex-col sm:flex-row items-center group">
+                            <!-- Left / Right positioning -->
+                            <div :class="idx % 2 === 0 ? 'sm:w-1/2 sm:pr-12 sm:text-right' : 'sm:w-1/2 sm:ml-auto sm:pl-12 sm:text-left'" class="w-full mb-4 sm:mb-0">
+                                <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md transition-all">
+                                    <span class="inline-block px-3 py-1 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 text-xs font-bold mb-2" x-text="step.week"></span>
+                                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2" x-text="step.title"></h3>
+                                    <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed" x-text="step.desc"></p>
+                                </div>
+                            </div>
+
+                            <!-- Center Badge Node -->
+                            <div class="absolute left-1/2 -translate-x-1/2 hidden sm:flex items-center justify-center w-10 h-10 rounded-full bg-brand-600 text-white font-bold text-xs shadow-lg shadow-brand-600/40 z-10">
+                                <span x-text="idx + 1"></span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="galeri" class="py-20 bg-slate-100/70 dark:bg-slate-900/40 border-y border-slate-200/60 dark:border-slate-800/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-3">
+                <span class="text-brand-600 dark:text-brand-400 font-bold text-sm tracking-wider uppercase">Dokumentasi Visual</span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Galeri Kegiatan Desa</h2>
+                <p class="text-slate-600 dark:text-slate-400 text-base sm:text-lg">
+                    Potret keseruan, kerja keras, dan kehangatan interaksi bersama warga masyarakat.
+                </p>
+            </div>
+
+            <!-- Gallery Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <template x-for="photo in galleryPhotos" :key="photo.id">
+                    <div @click="openImageLightbox(photo)" class="group relative rounded-3xl overflow-hidden aspect-[4/3] bg-slate-800 cursor-pointer shadow-sm hover:shadow-2xl transition-all duration-300">
+                        <img :src="photo.url" 
+                             :alt="photo.caption" 
+                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                             onerror="this.src='https://placehold.co/600x450/16a34a/ffffff?text=Dokumentasi+Kegiatan'">
+                        
+                        <!-- Overlay -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                            <span class="text-xs font-semibold text-brand-400 mb-1" x-text="photo.date"></span>
+                            <p class="text-sm font-bold text-white mb-2" x-text="photo.caption"></p>
+                            <span class="inline-flex items-center gap-1.5 text-xs text-slate-300">
+                                <i class="fa-solid fa-up-right-and-down-left-from-center text-[10px]"></i>
+                                <span>Perbesar Foto</span>
+                            </span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </section>
+
+    <section id="artikel" class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+                <div class="space-y-3 max-w-2xl">
+                    <span class="text-brand-600 dark:text-brand-400 font-bold text-sm tracking-wider uppercase">Catatan Harian Pengabdian</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Logbook & Artikel Berita</h2>
+                    <p class="text-slate-600 dark:text-slate-400 text-base">
+                        Kumpulan laporan jurnal harian, cerita menginspirasi, dan artikel perkembangan proyek KKN.
+                    </p>
+                </div>
+
+                <!-- Search Input inside Logbook -->
+                <div class="relative w-full md:w-72">
+                    <input type="text" 
+                           x-model="searchQuery" 
+                           placeholder="Cari artikel / kegiatan..." 
+                           class="w-full pl-10 pr-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                </div>
+            </div>
+
+            <!-- Articles Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <template x-for="article in filteredArticles" :key="article.id">
+                    <article class="bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+                        <div>
+                            <div class="relative h-48 overflow-hidden bg-slate-200 dark:bg-slate-800">
+                                <img :src="article.image" 
+                                     :alt="article.title" 
+                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                     onerror="this.src='https://placehold.co/600x400/16a34a/ffffff?text=Logbook+KKN'">
+                                <div class="absolute top-3 left-3 bg-brand-600 text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase" x-text="article.tag"></div>
+                            </div>
+                            <div class="p-6 space-y-3">
+                                <div class="flex items-center gap-3 text-xs text-slate-400">
+                                    <span><i class="fa-regular fa-calendar mr-1"></i> <span x-text="article.date"></span></span>
+                                    <span>•</span>
+                                    <span><i class="fa-regular fa-user mr-1"></i> <span x-text="article.author"></span></span>
+                                </div>
+                                <h3 class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors line-clamp-2" x-text="article.title"></h3>
+                                <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 leading-relaxed" x-text="article.excerpt"></p>
+                            </div>
+                        </div>
+
+                        <div class="p-6 pt-0">
+                            <button @click="openArticleModal(article)" class="inline-flex items-center gap-2 text-sm font-bold text-brand-600 dark:text-brand-400 hover:gap-3 transition-all">
+                                <span>Baca Selengkapnya</span>
+                                <i class="fa-solid fa-arrow-right text-xs"></i>
+                            </button>
+                        </div>
+                    </article>
+                </template>
+            </div>
+        </div>
+    </section>
+
+    <section id="aspirasi" class="py-20 bg-slate-100/70 dark:bg-slate-900/40 border-t border-slate-200/60 dark:border-slate-800/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-12 gap-12 items-center">
+                
+                <!-- Info Column -->
+                <div class="lg:col-span-5 space-y-6">
+                    <span class="text-brand-600 dark:text-brand-400 font-bold text-sm tracking-wider uppercase">Suara Masyarakat</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Kotak Saran & Aspirasi Warga Desa</h2>
+                    <p class="text-slate-600 dark:text-slate-400 text-base leading-relaxed">
+                        Kami sangat terbuka menerima masukan, ide, kritik, maupun permohonan bantuan program dari seluruh warga Desa Pemuda Jaya demi suksesnya pengabdian ini.
+                    </p>
+
+                    <div class="space-y-4 pt-4">
+                        <div class="flex items-start gap-4 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                            <div class="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-house-chimney text-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 font-medium">Lokasi Posko KKN</p>
+                                <p class="text-sm font-bold">Rumah Bapak RT 03 / RW 01, Dusun Karang Anyar</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-4 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                            <div class="w-10 h-10 rounded-xl bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0">
+                                <i class="fa-brands fa-whatsapp text-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 font-medium">Layanan WhatsApp Humas</p>
+                                <p class="text-sm font-bold">+62 812-3456-7890 (Rizal - Humas KKN)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Column -->
+                <div class="lg:col-span-7">
+                    <div class="bg-white dark:bg-slate-900 p-8 sm:p-10 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl">
+                        <form @submit.prevent="submitFeedback()" class="space-y-5">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Nama Lengkap</label>
+                                    <input type="text" x-model="feedbackForm.name" required placeholder="Contoh: Pak Budi" class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Dusun / RT</label>
+                                    <input type="text" x-model="feedbackForm.dusun" required placeholder="Contoh: Dusun Karang Anyar" class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Kategori Aspirasi</label>
+                                <select x-model="feedbackForm.category" class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                    <option value="Saran Program">Saran / Masukan Program Kerja</option>
+                                    <option value="Permohonan Bantuan">Permohonan Pendampingan Desa</option>
+                                    <option value="Apresiasi">Apresiasi & Ucapan</option>
+                                    <option value="Lainnya">Lainnya</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Pesan / Masukan Anda</label>
+                                <textarea x-model="feedbackForm.message" rows="4" required placeholder="Tuliskan masukan atau tanggapan Anda secara jelas..." class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+                            </div>
+
+                            <button type="submit" class="w-full py-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm shadow-lg shadow-brand-600/30 hover:shadow-brand-600/50 transition-all flex items-center justify-center gap-2">
+                                <i class="fa-regular fa-paper-plane"></i>
+                                <span>Kirim Aspirasi Sekarang</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-slate-950 text-slate-400 py-16 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-slate-800">
+                <!-- Col 1: Branding -->
+                <div class="space-y-4 md:col-span-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center text-white font-bold text-lg">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                        <span class="text-xl font-extrabold text-white tracking-tight">KKN 42 - Pemuda Jaya</span>
+                    </div>
+                    <p class="text-sm text-slate-400 max-w-sm leading-relaxed">
+                        Kuliah Kerja Nyata Tematik Universitas Negeri 2026. Berdedikasi penuh untuk kemajuan sosial, ekonomi, dan pendidikan masyarakat Desa Pemuda Jaya.
+                    </p>
+                </div>
+
+                <!-- Col 2: Quick Navigation -->
+                <div>
+                    <p class="text-sm font-bold text-white uppercase tracking-wider mb-4">Navigasi Halaman</p>
+                    <ul class="space-y-2.5 text-sm">
+                        <li><a href="#hero" class="hover:text-brand-400 transition-colors">Beranda</a></li>
+                        <li><a href="#profil-desa" class="hover:text-brand-400 transition-colors">Profil Desa</a></li>
+                        <li><a href="#tim" class="hover:text-brand-400 transition-colors">Anggota Tim</a></li>
+                        <li><a href="#progja" class="hover:text-brand-400 transition-colors">Program Kerja</a></li>
+                        <li><a href="#galeri" class="hover:text-brand-400 transition-colors">Galeri Foto</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3: Social & Media -->
+                <div>
+                    <p class="text-sm font-bold text-white uppercase tracking-wider mb-4">Ikuti Perjalanan Kami</p>
+                    <div class="flex gap-3 mb-4">
+                        <a href="https://instagram.com" target="_blank" class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-brand-600 transition-colors flex items-center justify-center">
+                            <i class="fa-brands fa-instagram"></i>
+                        </a>
+                        <a href="https://youtube.com" target="_blank" class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-brand-600 transition-colors flex items-center justify-center">
+                            <i class="fa-brands fa-youtube"></i>
+                        </a>
+                        <a href="https://tiktok.com" target="_blank" class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:bg-brand-600 transition-colors flex items-center justify-center">
+                            <i class="fa-brands fa-tiktok"></i>
+                        </a>
+                    </div>
+                    <p class="text-xs text-slate-500">Email: kkn42.pemudajaya@univ.ac.id</p>
+                </div>
+            </div>
+
+            <!-- Bottom Copyright -->
+            <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+                <p>&copy; 2026 Tim KKN Kelompok 42 Desa Pemuda Jaya. Hak Cipta Dilindungi.</p>
+                <p class="flex items-center gap-1">
+                    <span>Dibuat dengan</span>
+                    <i class="fa-solid fa-heart text-red-500"></i>
+                    <span>oleh Divisi IT & Publikasi</span>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- Progja Detail Modal -->
+    <div x-show="modalProgja.open" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+         style="display: none;">
+        <div @click.away="modalProgja.open = false" class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl relative overflow-hidden">
+            <button @click="modalProgja.open = false" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 dark:hover:text-white text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <template x-if="modalProgja.data">
+                <div class="space-y-5">
+                    <span class="inline-block text-xs font-bold px-3 py-1 rounded-full bg-brand-500/10 text-brand-600" x-text="modalProgja.data.category"></span>
+                    <h3 class="text-2xl font-extrabold text-slate-900 dark:text-white" x-text="modalProgja.data.title"></h3>
+                    
+                    <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 space-y-2 text-xs sm:text-sm">
+                        <p><strong>Status:</strong> <span class="text-brand-600 font-semibold" x-text="modalProgja.data.status"></span></p>
+                        <p><strong>Penanggung Jawab (PJ):</strong> <span x-text="modalProgja.data.pic"></span></p>
+                        <p><strong>Sasaran Peserta:</strong> <span x-text="modalProgja.data.target"></span></p>
+                        <p><strong>Waktu Pelaksanaan:</strong> <span x-text="modalProgja.data.schedule"></span></p>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-bold mb-1">Deskripsi Lengkap Program:</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed" x-text="modalProgja.data.description"></p>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-bold mb-1">Capaian & Output Kegiatan:</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed" x-text="modalProgja.data.output"></p>
+                    </div>
+
+                    <div class="pt-4 flex justify-end">
+                        <button @click="modalProgja.open = false" class="px-6 py-2.5 rounded-xl bg-brand-600 text-white font-semibold text-sm">Tutup Rincian</button>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- Article Detail Modal -->
+    <div x-show="modalArticle.open" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+         style="display: none;">
+        <div @click.away="modalArticle.open = false" class="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl relative max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <button @click="modalArticle.open = false" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 dark:hover:text-white text-xl z-10">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <template x-if="modalArticle.data">
+                <div class="space-y-6">
+                    <div class="rounded-2xl overflow-hidden h-64 bg-slate-800">
+                        <img :src="modalArticle.data.image" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex items-center gap-3 text-xs text-brand-600 dark:text-brand-400 font-bold">
+                        <span x-text="modalArticle.data.tag"></span>
+                        <span>•</span>
+                        <span x-text="modalArticle.data.date"></span>
+                    </div>
+                    <h3 class="text-2xl font-extrabold text-slate-900 dark:text-white" x-text="modalArticle.data.title"></h3>
+                    <div class="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 text-sm leading-relaxed space-y-4" x-html="modalArticle.data.content"></div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- Gallery Lightbox Modal -->
+    <div x-show="lightbox.open" 
+         x-transition
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md"
+         style="display: none;">
+        <button @click="lightbox.open = false" class="absolute top-6 right-6 text-white text-2xl hover:text-brand-400">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div @click.away="lightbox.open = false" class="max-w-4xl w-full text-center space-y-4">
+            <img :src="lightbox.photo?.url" class="max-h-[75vh] mx-auto rounded-2xl shadow-2xl object-contain">
+            <p class="text-white font-medium text-base" x-text="lightbox.photo?.caption"></p>
+            <p class="text-brand-400 text-xs font-semibold" x-text="lightbox.photo?.date"></p>
+        </div>
+    </div>
+
+    <script>
+        function kknApp() {
+            return {
+                darkMode: false,
+                scrolled: false,
+                mobileMenuOpen: false,
+                activeSection: 'hero',
+                teamFilter: 'all',
+                selectedCategory: 'Semua',
+                searchQuery: '',
+                
+                toast: {
+                    show: false,
+                    message: ''
+                },
+
+                feedbackForm: {
+                    name: '',
+                    dusun: '',
+                    category: 'Saran Program',
+                    message: ''
+                },
+
+                modalProgja: {
+                    open: false,
+                    data: null
+                },
+
+                modalArticle: {
+                    open: false,
+                    data: null
+                },
+
+                lightbox: {
+                    open: false,
+                    photo: null
+                },
+
+                navLinks: [
+                    { label: 'Beranda', href: '#hero' },
+                    { label: 'Profil Desa', href: '#profil-desa' },
+                    { label: 'Anggota Tim', href: '#tim' },
+                    { label: 'Program Kerja', href: '#progja' },
+                    { label: 'Timeline', href: '#jadwal' },
+                    { label: 'Galeri', href: '#galeri' },
+                    { label: 'Logbook', href: '#artikel' },
+                ],
+
+                // Team Data
+                teamMembers: [
+                    { id: 1, name: 'Ahmad Fauzi', role: 'Ketua Kelompok', category: 'BPH', nim: '2105101045', major: 'Teknik Informatika', quote: 'Memimpin dengan teladan, mengabdi dengan ikhlas.', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=500&q=80', instagram: '#', email: 'fauzi@univ.ac.id' },
+                    { id: 2, name: 'Siti Rahmawati', role: 'Sekretaris', category: 'BPH', nim: '2105101088', major: 'Administrasi Publik', quote: 'Ketelitian dalam dokumen adalah awal keberhasilan.', photo: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=500&q=80', instagram: '#', email: 'rahma@univ.ac.id' },
+                    { id: 3, name: 'Dian Permata', role: 'Bendahara', category: 'BPH', nim: '2105102012', major: 'Akuntansi Ekonomi', quote: 'Transparansi anggaran kunci kebersamaan.', photo: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=500&q=80', instagram: '#', email: 'dian@univ.ac.id' },
+                    { id: 4, name: 'Bagas Pratama', role: 'Koor Divisi UMKM', category: 'Divisi', nim: '2105103099', major: 'Agribisnis', quote: 'Kopi lokal Pemuda Jaya bersaing di pasar modern.', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&q=80', instagram: '#', email: 'bagas@univ.ac.id' },
+                    { id: 5, name: 'Nabila Putri', role: 'Koor Pendidikan', category: 'Divisi', nim: '2105104051', major: 'Pendidikan Bahasa Inggris', quote: 'Membuka jendela dunia anak-anak desa.', photo: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=500&q=80', instagram: '#', email: 'nabila@univ.ac.id' },
+                    { id: 6, name: 'Rizal Ferdiansyah', role: 'Koor Humas & Media', category: 'Divisi', nim: '2105105022', major: 'Ilmu Komunikasi', quote: 'Menghubungkan aspirasi, menyampaikan cerita.', photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=80', instagram: '#', email: 'rizal@univ.ac.id' },
+                ],
+
+                progjaCategories: ['Semua', 'Ekonomi & UMKM', 'Pendidikan', 'Kesehatan', 'Teknologi & Desa'],
+
+                // Progja Data
+                progjas: [
+                    { id: 1, title: 'Digitalisasi Branding & Packaging Kopi Robusta', category: 'Ekonomi & UMKM', status: 'Terlaksana', pic: 'Bagas Pratama', target: 'Kelompok Tani Kopi & UMKM', progress: 100, description: 'Pengembangan logo baru, desain kemasan berbahan aluminium foil kedap udara, serta registrasi toko online di e-commerce.', schedule: 'Minggu 2 & 3', output: 'Terciptanya brand baru "Robusta Pemuda Jaya" lengkap dengan akun Shopee & Tokopedia.' },
+                    { id: 2, title: 'Rumah Belajar Interaktif & English Club Child', category: 'Pendidikan', status: 'Berlangsung', pic: 'Nabila Putri', target: 'Anak-anak SD kelas 1-6', progress: 75, description: 'Bimbingan belajar tambahan gratis setiap sore di posko KKN mencakup pelajaran Bahasa Inggris dasar, Matematika gembira, dan membaca.', schedule: 'Setiap Hari Selasa & Kamis', output: 'Meningkatnya minat belajar 45+ siswa SD di Dusun Karang Anyar.' },
+                    { id: 3, title: 'Pemeriksaan Kesehatan & Penyuluhan Stunting', category: 'Kesehatan', status: 'Terlaksana', pic: 'Dian Permata', target: 'Ibu Hamil & Balita Posyandu', progress: 100, description: 'Kolaborasi dengan Pustu Desa mengadakan cek gula darah, tensi gratis, serta pembagian makanan tambahan (PMT) kaya gizi.', schedule: 'Minggu ke-3', output: 'Pemeriksaan kesehatan gratis untuk 80 warga lansia dan ibu hamil.' },
+                    { id: 4, title: 'Pembuatan Website Profil & Peta Digital RT/RW', category: 'Teknologi & Desa', status: 'Berlangsung', pic: 'Ahmad Fauzi', target: 'Pemerintah Desa Pemuda Jaya', progress: 85, description: 'Membangun website resmi desa dan pemetaan titik penting desa di Google Maps untuk memudahkan wisatawan serta pelayanan admin.', schedule: 'Minggu 3 s/d 5', output: 'Portal informasi desa dan Peta Digital terverifikasi.' },
+                    { id: 5, title: 'Pelatihan Bank Sampah Organik & Composting', category: 'Teknologi & Desa', status: 'Rencana', pic: 'Rizal Ferdiansyah', target: 'Ibu-ibu PKK Desa', progress: 20, description: 'Edukasi pemilahan sampah rumah tangga dan pengolahan limbah dapur menjadi pupuk kompos cair organik super.', schedule: 'Minggu ke-5', output: 'Terbentuknya 1 unit pilot project Bank Sampah di Dusun 2.' },
+                ],
+
+                // Timeline Data
+                timelineSteps: [
+                    { week: 'Minggu 1', title: 'Observasi & Silaturahmi Tokoh Desa', desc: 'Pelepasan resmi dari kampus, penerimaan oleh Kepala Desa, serta survei pemetaan masalah awal di 4 dusun.' },
+                    { week: 'Minggu 2', title: 'Eksekusi Progja Pendidikan & UMKM', desc: 'Pembukaan Rumah Belajar anak-anak dan pelatihan foto produk serta packaging untuk usaha kopi lokal.' },
+                    { week: 'Minggu 3', title: 'Pemeriksaan Kesehatan & Seminar Stunting', desc: 'Penyelenggaraan Posyandu kreatif, cek kesehatan gratis warga lansia, dan dimulainya koding Website Desa.' },
+                    { week: 'Minggu 4', title: 'Pendampingan Legalitas & NIB UMKM', desc: 'Membantu pembuatan Nomor Induk Berusaha (NIB) bagi 10 pelaku usaha mikro lokal.' },
+                    { week: 'Minggu 5', title: 'Pelatihan Lingkungan & Pembuatan Kompos', desc: 'Sosialisasi pengolahan sampah dan penanaman 200 bibit pohon buah di area pemukiman warga.' },
+                    { week: 'Minggu 6', title: 'Malam Keakraban & Penutupan Pengabdian', desc: 'Pameran hasil karya KKN, malam perpisahan dengan pentas seni anak-anak desa, dan penyerahan laporan resmi.' },
+                ],
+
+                // Gallery Photos
+                galleryPhotos: [
+                    { id: 1, url: 'https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?auto=format&fit=crop&w=800&q=80', caption: 'Penyuluhan dan Pembagian Makanan Tambahan Balita', date: '12 Februari 2026' },
+                    { id: 2, url: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80', caption: 'Suasana Rumah Belajar Bahasa Inggris Gratis Sore Hari', date: '15 Februari 2026' },
+                    { id: 3, url: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80', caption: 'Pendampingan Pengemasan Produk Kopi Bersama Warga', date: '18 Februari 2026' },
+                    { id: 4, url: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=800&q=80', caption: 'Gotong Royong Bersama Pemuda Karang Taruna Desa', date: '20 Februari 2026' },
+                    { id: 5, url: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80', caption: 'Rapat Koordinasi Bersama Bapak Kepala Desa & Perangkat', date: '22 Februari 2026' },
+                    { id: 6, url: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=800&q=80', caption: 'Sesi Foto Bersama Setelah Kegiatan Mengajar di SD', date: '25 Februari 2026' },
+                ],
+
+                // Logbook Articles
+                articles: [
+                    { 
+                        id: 1, 
+                        title: 'Antusiasme Tinggi Anak-Anak Desa Pemuda Jaya Ikuti English Learning Club', 
+                        date: '16 Feb 2026', 
+                        author: 'Nabila Putri', 
+                        tag: 'Pendidikan', 
+                        image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80',
+                        excerpt: 'Program mengajar sore hari di Posko KKN Kelompok 42 disambut hangat oleh anak-anak sekolah dasar. Metode bernyanyi dan permainan edukatif jadi kunci keceriaan.',
+                        content: `<p>Pada hari Selasa sore, suasana di Posko KKN Kelompok 42 tampak lebih ramai dari biasanya. Puluhan anak-anak dari Dusun Karang Anyar berkumpul membawa buku tulis dan alat gambar.</p><p>Program English Club Child ini dirancang khusus untuk mengenalkan kosakata Bahasa Inggris dasar melalui metode interaktif seperti bernyanyi, kartu kuis, dan permainan kelompok. Harapannya anak-anak semakin percaya diri dan bersemangat belajar.</p>`
+                    },
+                    { 
+                        id: 2, 
+                        title: 'Inovasi Kemasan & Branding Baru Tingkatkan Nilai Jual Kopi Robusta Lokal', 
+                        date: '19 Feb 2026', 
+                        author: 'Bagas Pratama', 
+                        tag: 'Ekonomi UMKM', 
+                        image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80',
+                        excerpt: 'Melalui pendampingan dari tim KKN, para petani kopi lokal kini memproduksi kopi bubuk dalam kemasan ziplock modern bernilai ekonomis lebih tinggi.',
+                        content: `<p>Desa Pemuda Jaya dikenal memiliki perkebunan kopi robusta yang luas, namun selama ini hasil panen dijual dalam bentuk biji mentah dengan harga yang relatif murah.</p><p>Tim Divisi UMKM KKN Kelompok 42 hadir memberikan solusi dengan merancang desain brand "Robusta Pemuda Jaya", mengajarkan teknik roasting yang konsisten, hingga pendaftaran izin edar dan penjualan secara online.</p>`
+                    },
+                    { 
+                        id: 3, 
+                        title: 'Pemeriksaan Kesehatan Gratis Lansia & Edukasi Cegah Stunting Sejak Dini', 
+                        date: '23 Feb 2026', 
+                        author: 'Dian Permata', 
+                        tag: 'Kesehatan', 
+                        image: 'https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?auto=format&fit=crop&w=800&q=80',
+                        excerpt: 'Kolaborasi sukses antara mahasiswa KKN, Bidan Desa, dan kader Posyandu melayani lebih dari 80 warga untuk pemeriksaan gula darah dan konsultasi gizi.',
+                        content: `<p>Kesehatan merupakan pondasi penting pembangunan masyarakat. Dalam upaya membantu program pencegahan stunting pemerintah setempat, KKN Kelompok 42 menyelenggarakan Posyandu Sehat.</p><p>Selain penimbangan balita dan edukasi gizi bagi ibu hamil, diselenggarakan pula pemeriksaan asam urat dan gula darah gratis untuk para lansia di balai desa.</p>`
+                    }
+                ],
+
+                // Filtered Computeds
+                get filteredTeam() {
+                    if (this.teamFilter === 'all') return this.teamMembers;
+                    return this.teamMembers.filter(m => m.category === this.teamFilter);
+                },
+
+                get filteredProgja() {
+                    if (this.selectedCategory === 'Semua') return this.progjas;
+                    return this.progjas.filter(p => p.category === this.selectedCategory);
+                },
+
+                get filteredArticles() {
+                    if (!this.searchQuery.trim()) return this.articles;
+                    return this.articles.filter(a => 
+                        a.title.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
+                        a.excerpt.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                        a.tag.toLowerCase().includes(this.searchQuery.toLowerCase())
+                    );
+                },
+
+                // Actions
+                openProgjaModal(item) {
+                    this.modalProgja.data = item;
+                    this.modalProgja.open = true;
+                },
+
+                openArticleModal(article) {
+                    this.modalArticle.data = article;
+                    this.modalArticle.open = true;
+                },
+
+                openImageLightbox(photo) {
+                    this.lightbox.photo = photo;
+                    this.lightbox.open = true;
+                },
+
+                submitFeedback() {
+                    this.showToast('Terima kasih! Aspirasi Anda berhasil terkirim ke tim KKN.');
+                    this.feedbackForm = {
+                        name: '',
+                        dusun: '',
+                        category: 'Saran Program',
+                        message: ''
+                    };
+                },
+
+                showToast(msg) {
+                    this.toast.message = msg;
+                    this.toast.show = true;
+                    setTimeout(() => {
+                        this.toast.show = false;
+                    }, 4000);
+                },
+
+                initScroll() {
+                    window.addEventListener('scroll', () => {
+                        this.scrolled = window.scrollY > 30;
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+</html>
